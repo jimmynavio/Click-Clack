@@ -5,7 +5,6 @@ import javax.sound.sampled.*;
 
 public class SoundController{
   private AudioInputStream audioIn;
-  private AudioFormat sourceFormat, targetFormat;
   private Clip[] clips;
   private FloatControl[] controls;
   private File soundFile;
@@ -23,20 +22,7 @@ public class SoundController{
       soundFile = new File(filePath);
 
       for(int i=0; i<count; i++){
-        soundFile = new File(filePath);
         audioIn = AudioSystem.getAudioInputStream(soundFile);
-        sourceFormat = audioIn.getFormat();
-        targetFormat = new AudioFormat(
-          sourceFormat.getEncoding(),
-          48000f, // target sample rate
-          sourceFormat.getSampleSizeInBits(),
-          sourceFormat.getChannels(),
-          sourceFormat.getFrameSize(),
-          48000f, // target frame rate
-          sourceFormat.isBigEndian()
-        );
-
-        audioIn = AudioSystem.getAudioInputStream(targetFormat, audioIn);
         clips[i] = AudioSystem.getClip();
         clips[i].open(audioIn);
         
