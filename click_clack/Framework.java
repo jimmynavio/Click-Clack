@@ -95,7 +95,7 @@ public class Framework extends Canvas {
         loadingImgs[i] = ImageIO.read(file);
       }
       
-      menuMusic = new SoundController("click_clack/resources/sounds/MainNew.wav", 1, soundVolume);
+      menuMusic = new SoundController("click_clack/resources/sounds/MainShort.wav", 1, soundVolume);
       gameBeginSound = new SoundController("click_clack/resources/sounds/ShootTheTargets.wav", 1, soundVolume);
       optionSound = new SoundController("click_clack/resources/sounds/Shot.wav", 5, soundVolume);
       gameMusic = new SoundController("click_clack/resources/sounds/GamePlay.wav", 1, soundVolume);
