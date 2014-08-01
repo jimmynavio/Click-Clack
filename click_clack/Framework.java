@@ -8,7 +8,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.File;
+import java.net.URL;
 import java.util.Random;
 import javax.imageio.ImageIO;
 
@@ -46,7 +46,7 @@ public class Framework extends Canvas {
   private long lastTime;  
   private Game game;
 
-  private File file;
+  private URL file;
   private BufferedImage menuImg;
   private BufferedImage[] loadingImgs;
   private int loadNum;
@@ -80,9 +80,9 @@ public class Framework extends Canvas {
   private void loadContent(){
     try{
       if(frameWidth > 1200)
-        file = new File("click_clack/resources/images/MainMenu.png");
+        file = this.getClass().getResource("resources/images/MainMenu.png");
       else
-        file = new File("click_clack/resources/images/MainMenuSmall.png");
+        file = this.getClass().getResource("resources/images/MainMenuSmall.png");
 
       menuImg = ImageIO.read(file);
 
@@ -90,15 +90,15 @@ public class Framework extends Canvas {
       String imagePath;
       
       for(int i=0; i<loadingImgs.length; i++){
-        imagePath = "click_clack/resources/images/loading0"+i+".jpg";
-        file = new File(imagePath);
+        imagePath = "resources/images/loading0"+i+".jpg";
+        file = this.getClass().getResource(imagePath);
         loadingImgs[i] = ImageIO.read(file);
       }
       
-      menuMusic = new SoundController("click_clack/resources/sounds/MainShort.wav", 1, soundVolume);
-      gameBeginSound = new SoundController("click_clack/resources/sounds/ShootTheTargets.wav", 1, soundVolume);
-      optionSound = new SoundController("click_clack/resources/sounds/Shot.wav", 5, soundVolume);
-      gameMusic = new SoundController("click_clack/resources/sounds/GamePlay.wav", 1, soundVolume);
+      menuMusic = new SoundController("resources/sounds/MainShort.wav", 1, soundVolume);
+      gameBeginSound = new SoundController("resources/sounds/ShootTheTargets.wav", 1, soundVolume);
+      optionSound = new SoundController("resources/sounds/Shot.wav", 5, soundVolume);
+      gameMusic = new SoundController("resources/sounds/GamePlay.wav", 1, soundVolume);
     }
     catch (IOException ex) {
       ex.printStackTrace();

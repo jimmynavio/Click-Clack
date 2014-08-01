@@ -8,7 +8,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.FontMetrics;
 import java.io.IOException;
-import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 
@@ -30,7 +30,7 @@ public class Game {
   private long timeBetweenShots;
   private boolean mouseVisible;
 
-  private File file;
+  private URL file;
   private BufferedImage backgroundImg;
   private BufferedImage sightImg;
 
@@ -87,29 +87,29 @@ public class Game {
   private void loadContent(){
     try{
       if(Framework.frameWidth > 1200)
-        file = new File("click_clack/resources/images/Background.jpg");
+        file = this.getClass().getResource("resources/images/Background.jpg");
       else
-        file = new File("click_clack/resources/images/BackgroundSmall.jpg");
+        file = this.getClass().getResource("resources/images/BackgroundSmall.jpg");
 
       backgroundImg = ImageIO.read(file);
       
-      file = new File("click_clack/resources/images/Cursor.png");
+      file = this.getClass().getResource("resources/images/Cursor.png");
       sightImg = ImageIO.read(file);
       sightImgMiddleWidth = sightImg.getWidth() / 2;
       sightImgMiddleHeight = sightImg.getHeight() / 2;
 
-      shotSound = new SoundController("click_clack/resources/sounds/Shot.wav", 5, Framework.soundVolume);
-      hitSound = new SoundController("click_clack/resources/sounds/Hit.wav", 5, Framework.soundVolume);
-      missSound = new SoundController("click_clack/resources/sounds/Miss.wav", 5, Framework.soundVolume);
-      failureSound = new SoundController("click_clack/resources/sounds/Failure.wav", 1, Framework.soundVolume);
-      successSound = new SoundController("click_clack/resources/sounds/Success.wav", 1, Framework.soundVolume);
-      upgradeSound = new SoundController("click_clack/resources/sounds/Upgrade.wav", 5, Framework.soundVolume);
-      gameOverSound = new SoundController("click_clack/resources/sounds/GameOver.wav", 5, Framework.soundVolume);
+      shotSound = new SoundController("resources/sounds/Shot.wav", 5, Framework.soundVolume);
+      hitSound = new SoundController("resources/sounds/Hit.wav", 5, Framework.soundVolume);
+      missSound = new SoundController("cresources/sounds/Miss.wav", 5, Framework.soundVolume);
+      failureSound = new SoundController("resources/sounds/Failure.wav", 1, Framework.soundVolume);
+      successSound = new SoundController("resources/sounds/Success.wav", 1, Framework.soundVolume);
+      upgradeSound = new SoundController("resources/sounds/Upgrade.wav", 5, Framework.soundVolume);
+      gameOverSound = new SoundController("resources/sounds/GameOver.wav", 5, Framework.soundVolume);
       
       streakSounds = new SoundController[8];
       String soundPath;
       for(int i=0; i<streakSounds.length; i++){
-        soundPath = "click_clack/resources/sounds/KillStreak"+i+".wav";
+        soundPath = "resources/sounds/KillStreak"+i+".wav";
         streakSounds[i] = new SoundController(soundPath, 1, Framework.soundVolume);
       }
 

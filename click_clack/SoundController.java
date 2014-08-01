@@ -1,13 +1,13 @@
 package click_clack;
 
-import java.io.File;
+import java.net.URL;
 import javax.sound.sampled.*;
 
 public class SoundController{
   private AudioInputStream audioIn;
   private Clip[] clips;
   private FloatControl[] controls;
-  private File soundFile;
+  private URL soundFile;
   int count, currentClip;
   FloatControl gainControl;
 
@@ -19,7 +19,7 @@ public class SoundController{
     try{
       clips = new Clip[count];
       controls = new FloatControl[count];
-      soundFile = new File(filePath);
+      soundFile = this.getClass().getResource(filePath);
 
       for(int i=0; i<count; i++){
         audioIn = AudioSystem.getAudioInputStream(soundFile);
