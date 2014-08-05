@@ -44,8 +44,9 @@ public class SoundController{
   //Cycles through array to play sounds
   //Necessary if same sound will play more than once & overlap
   void playSound(){
-    if(clips[currentClip].isRunning())
+    if(clips[currentClip].isRunning()){
       clips[currentClip].stop();
+    }
     clips[currentClip].setFramePosition(0);
     clips[currentClip].start();
 

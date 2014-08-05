@@ -6,9 +6,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 
 public class Target{
-  public static long timeBetween = Framework.secInNanosec / 2;
-  public static long lastTargetTime = 0;
-  
   protected int difficulty;
   protected int diameter;
   protected int radius;

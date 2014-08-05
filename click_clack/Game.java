@@ -13,10 +13,14 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 
 public class Game {
+  final int CROSSFLASH = 25;
+
   private Font scoreFont;
   private Font gameOverFont;
   private Font hitStreakFont;
   
+  public long timeBetweenTargets = (long)(Framework.secInNanosec / 1.5);
+  public long timeLastTarget = 0;
   private ArrayList<Target> targets;
   private int targetCount;
   private int lives;
@@ -24,11 +28,15 @@ public class Game {
   private int hitStreak;
   private boolean hit;
   
+  private int missFlash;
+  private int lifeFlash;
+  private int levelFlash;
+
+  private int lastClick;
+  private int lastKey;
   private int score;
   private int totalShots;
-  private long lastShotTime;    
-  private long timeBetweenShots;
-  private boolean mouseVisible;
+  private int mouseVisible;
 
   private URL file;
   private BufferedImage backgroundImg;
@@ -46,11 +54,14 @@ public class Game {
   private int sightImgMiddleWidth;
   private int sightImgMiddleHeight;
   private char[] keyStates;
+  private int[] mouseStates;
 
   //Constructor
   //Sets initial values, loads resources, and starts game thread
   public Game(){
-    this.keyStates = new char[]{'Q','W','E','R','D','F'};
+    //this.keyStates = new char[]{'Q','W','E','R','D','F'};
+    this.keyStates = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+    this.mouseStates = new int[]{MouseEvent.BUTTON1,MouseEvent.BUTTON2,MouseEvent.BUTTON3};
     Framework.toLoading();
     
     Thread threadForInitGame = new Thread() {
@@ -75,12 +86,16 @@ public class Game {
     targetsHit = 0;
     hitStreak = 0;
 
+    missFlash = 0;
+    lifeFlash = 0;
+    levelFlash = 0;
+
+    lastClick = -1;
+    lastKey = -1;
     score = 0;
     totalShots = 0;
     
-    lastShotTime = 0;
-    timeBetweenShots = Framework.secInNanosec / 5;
-    mouseVisible = true;
+    mouseVisible = CROSSFLASH;
   }
 
   //Load game graphics and sound resources
@@ -100,7 +115,7 @@ public class Game {
 
       shotSound = new SoundController("resources/sounds/Shot.wav", 5, Framework.soundVolume);
       hitSound = new SoundController("resources/sounds/Hit.wav", 5, Framework.soundVolume);
-      missSound = new SoundController("cresources/sounds/Miss.wav", 5, Framework.soundVolume);
+      missSound = new SoundController("resources/sounds/Miss.wav", 5, Framework.soundVolume);
       failureSound = new SoundController("resources/sounds/Failure.wav", 1, Framework.soundVolume);
       successSound = new SoundController("resources/sounds/Success.wav", 1, Framework.soundVolume);
       upgradeSound = new SoundController("resources/sounds/Upgrade.wav", 5, Framework.soundVolume);
@@ -126,72 +141,73 @@ public class Game {
     targetsHit = 0;
     hitStreak = 0;
     
+    lastClick = -1;
+    lastKey = -1;
     score = 0;
-    totalShots = 0;    
-    lastShotTime = 0;
+    totalShots = 0;
+
+    mouseVisible = CROSSFLASH;
   }
 
   public void nextRound(){
-    targets.clear(); 
+    targets.clear();
     targetCount = 0;
     upgradeSound.playSound();
+    levelFlash = 0;
   }
-  
-  //Standard game update
-  public void updateStandardMode(long gameTime, Point mousePosition){
+
+  //ame update
+  public void updateGame(long gameTime, Point mousePosition){
     if(gameTime <= Framework.secInNanosec*2)
       return;
-
-    if(ghostMouse())
-      mouseVisible = false;
 
     if(targetCount < 50){
       addTarget();
     }else if(targets.size() < 1){
       checkEndurance();
     }
-
+    
     updateTargets();
     checkMissed();
-    
-    //CHECK PLAYER
-    if(Canvas.mouseButtonState(MouseEvent.BUTTON1)){
-      if(!mouseVisible) mouseVisible = true;
-      
-      if(System.nanoTime() - lastShotTime >= timeBetweenShots){
-        int targetIndex = getTarget(mousePosition);
-        hitTarget(targetIndex);
-      }
-    }
+    //CHECK ATTACK
+    if(Framework.targetType == 1) mouseAttack(mousePosition);
+    if(Framework.targetType == 2) smartAttack(mousePosition);
+    if(Framework.targetType == 3) keyAttack();
   }
 
-  //Key game update
-  public void updateKeyMode(long gameTime, Point mousePosition){
-    if(gameTime <= Framework.secInNanosec*2)
-      return;
+  void mouseAttack(Point mousePosition){
+    int buttonClicked = getButtonClick();
 
-    if(ghostMouse())
-      mouseVisible = false;
-
-    if(targetCount < 50){
-      addKeyTarget();
-    }else if(targets.size() < 1){
-      checkEndurance();
+    if(lastClick != buttonClicked && buttonClicked != -1){
+      mouseVisible = CROSSFLASH;
+      int targetIndex = getTarget(mousePosition);
+      hitTarget(targetIndex);
     }
-    
-    updateTargets();
-    checkMissed();
-    
-    //CHECK PLAYER
-    int keyPressed = getKeyPress();
-    if(keyPressed != -1){
-      if(!mouseVisible) mouseVisible = true;
 
-      if(System.nanoTime() - lastShotTime >= timeBetweenShots){
-        int targetIndex = getKeyTarget(mousePosition, (char)keyPressed);
-        hitTarget(targetIndex);
-      }
-    }    
+    lastClick = buttonClicked;
+  }
+
+  void smartAttack(Point mousePosition){
+    int keyPressed = getKeyPress();
+
+    if(lastKey != keyPressed && keyPressed != -1){
+      mouseVisible = CROSSFLASH;
+      int targetIndex = getSmartTarget(mousePosition, (char)keyPressed);
+      hitTarget(targetIndex);
+    }
+
+    lastKey = keyPressed;
+  }
+
+  void keyAttack(){
+    int keyPressed = getKeyPress();
+
+    if(lastKey != keyPressed && keyPressed != -1){
+      int targetIndex = getKeyTarget((char)keyPressed);
+      hitTarget(targetIndex);
+    }
+
+    lastKey = keyPressed;
   }
 
   //Begin update helper functions///////////////////////////////////////////////
@@ -200,18 +216,22 @@ public class Game {
   }
 
   void addTarget(){
-    if(System.nanoTime() - Target.lastTargetTime >= Target.timeBetween){
-      targets.add(new Target(Framework.difficulty, Framework.moving));
-      Target.lastTargetTime = System.nanoTime();
-      targetCount++;
-    }
-  }
+    if(System.nanoTime() - timeLastTarget >= timeBetweenTargets){
+      switch(Framework.targetType){
+        case 1:
+          targets.add(new Target(Framework.difficulty, Framework.moving));
+          break;
+        case 2:
+          targets.add(new KeyTarget(Framework.difficulty, Framework.moving, true));
+          break;
+        case 3:
+          targets.add(new KeyTarget(Framework.difficulty, Framework.moving, false));
+          break;
+      }
 
-  void addKeyTarget(){
-    if(System.nanoTime() - KeyTarget.lastTargetTime >= KeyTarget.timeBetween){
-      targets.add(new KeyTarget(Framework.difficulty, Framework.moving));
-      KeyTarget.lastTargetTime = System.nanoTime();
+      timeLastTarget = System.nanoTime();
       targetCount++;
+      levelFlash += 2;
     }
   }
 
@@ -234,6 +254,7 @@ public class Game {
         lives--;
         hitStreak = 0;
         missSound.playSound();
+        lifeFlash = 75;
       }
     }
   }
@@ -244,6 +265,15 @@ public class Game {
       failureSound.playSound();
       gameOverSound.playSound();
     }
+  }
+
+  int getButtonClick(){
+    for(int i=0; i<mouseStates.length; i++){
+      if(Canvas.mouseButtonState(mouseStates[i]))
+        return mouseStates[i];
+    }
+
+    return -1;
   }
 
   int getKeyPress(){
@@ -265,10 +295,19 @@ public class Game {
     return -1;
   }
 
-  int getKeyTarget(Point mousePosition, char keyPressed){
+  int getSmartTarget(Point mousePosition, char keyPressed){
     for(int i = 0; i < targets.size(); i++){
       if(targets.get(i).getCircle().contains(mousePosition)
       && targets.get(i).getKey() == keyPressed)
+        return i;
+    }
+
+    return -1;
+  }
+
+  int getKeyTarget(char keyPressed){
+    for(int i = 0; i < targets.size(); i++){
+      if(targets.get(i).getKey() == keyPressed)
         return i;
     }
 
@@ -300,9 +339,8 @@ public class Game {
       targets.remove(targetIndex);
     }else{
       hitStreak = 0;
+      missFlash = 200;
     }
-
-    lastShotTime = System.nanoTime();
   }
 
   //Check streak and play correct sound
@@ -324,8 +362,14 @@ public class Game {
   public void draw(Graphics2D g2d, Point mousePosition){
     int textWidth;
     g2d.drawImage(backgroundImg, 0, 0, null);
-    
-    g2d.setColor(new Color(0, 0, 0, 150));
+
+    g2d.setColor(new Color(lifeFlash, lifeFlash, lifeFlash, lifeFlash));
+    g2d.fillRect(0, 0, Framework.frameWidth, Framework.frameHeight);
+
+    g2d.setColor(new Color(0, levelFlash, 0, 150));
+    g2d.fillRect(0, 0, Framework.frameWidth, Framework.screenY(0.10));
+
+    g2d.setColor(new Color(missFlash, 0, 0, missFlash/2));
     g2d.fillRect(0, 0, Framework.frameWidth, Framework.screenY(0.10));
 
     g2d.setColor(Color.white);
@@ -339,7 +383,10 @@ public class Game {
     textWidth = g2d.getFontMetrics(hitStreakFont).stringWidth("+" + hitStreak);
     g2d.drawString("+" + hitStreak, Framework.frameWidth - textWidth - 10, Framework.screenY(0.08));
 
-    g2d.setColor(new Color(0, 0, 0, 150));
+    g2d.setColor(new Color(0, levelFlash, 0, 150));
+    g2d.fillRect(0, Framework.screenY(0.90), Framework.frameWidth, Framework.screenY(0.10));
+
+    g2d.setColor(new Color(missFlash, 0, 0, missFlash/2));
     g2d.fillRect(0, Framework.screenY(0.90), Framework.frameWidth, Framework.screenY(0.10));
 
     g2d.setColor(Color.white);
@@ -351,8 +398,12 @@ public class Game {
       targets.get(i).draw(g2d);
     }
 
-    if(mouseVisible)
+    if(mouseVisible > 0)
       g2d.drawImage(sightImg, mousePosition.x - sightImgMiddleWidth, mousePosition.y - sightImgMiddleHeight, null);
+
+    if(ghostMouse() && mouseVisible > 0) mouseVisible--;
+    if(missFlash > 0) missFlash--;
+    if(lifeFlash > 0) lifeFlash--;
   }
   
   //Draw game over screen

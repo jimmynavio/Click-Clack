@@ -117,12 +117,7 @@ public class Framework extends Canvas {
       switch (gameState){
         case PLAYING:
           gameTime += System.nanoTime() - lastTime;
-          
-          //Check target type and call correct update mode
-          if(targetType == 1)
-            game.updateStandardMode(gameTime, mousePosition());
-          if(targetType == 2)
-            game.updateKeyMode(gameTime, mousePosition());
+          game.updateGame(gameTime, mousePosition());
           
           lastTime = System.nanoTime();
           break;
@@ -192,6 +187,11 @@ public class Framework extends Canvas {
         if(targetType == 2){
           g2d.drawString("   [T] Target Type: Smart Casting", 10, screenY(0.60));
           g2d.drawString("Place the cross-hair over the target.", 10, screenY(0.68));
+          g2d.drawString("Press the correct key on the keyboard to shoot.", 10, screenY(0.72));
+        }
+        if(targetType == 3){
+          g2d.drawString("   [T] Target Type: Keyboard Only", 10, screenY(0.60));
+          g2d.drawString("The mouse is not used in this mode.", 10, screenY(0.68));
           g2d.drawString("Press the correct key on the keyboard to shoot.", 10, screenY(0.72));
         }
 
@@ -294,7 +294,7 @@ public class Framework extends Canvas {
     }
   }
   
-  //Key listener for main menu only
+  //Key released framework
   public void keyReleasedFramework(KeyEvent e){
     int tempKey = e.getKeyCode();
     switch (gameState){
@@ -313,7 +313,7 @@ public class Framework extends Canvas {
         if(tempKey == KeyEvent.VK_E) endurance = endurance? false: true;
         if(tempKey == KeyEvent.VK_M) moving = moving? false: true;
         if(tempKey == KeyEvent.VK_G) ghostMouse = ghostMouse? false: true;
-        if(tempKey == KeyEvent.VK_T) targetType = targetType<2? targetType+1: 1;
+        if(tempKey == KeyEvent.VK_T) targetType = targetType<3? targetType+1: 1;
         if(tempKey == KeyEvent.VK_ADD){
           if(soundVolume < 0.0f){
             soundVolume += 10.0f;

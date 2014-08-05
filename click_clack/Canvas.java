@@ -17,7 +17,7 @@ import javax.swing.JPanel;
 //Abstract class used by Framework
 //Sets up main graphics canvas and keyboard/mouse listeners
 public abstract class Canvas extends JPanel implements KeyListener, MouseListener {
-  private static boolean[] keyboardState = new boolean[525];
+  private static boolean[] keyboardState = new boolean[526];
   private static boolean[] mouseState = new boolean[3];
       
   public Canvas(){

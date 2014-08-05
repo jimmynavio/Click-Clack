@@ -7,31 +7,17 @@ import java.awt.Color;
 
 //Targets that appear slower and contain a letter(key)
 public class KeyTarget extends Target{
-  public static long timeBetween = Framework.secInNanosec / 1;
   private char key;
+  private char[] smartKeys = "QWERDF".toCharArray();
+  private char[] keys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 
-  public KeyTarget(int difficulty, boolean moving){
+  public KeyTarget(int difficulty, boolean moving, boolean smart){
     super(difficulty, moving);
 
-    switch(Framework.random.nextInt(6)){
-      case 0:
-        key = 'Q';
-        break;
-      case 1:
-        key = 'W';
-        break;
-      case 2:
-        key = 'E';
-        break;
-      case 3:
-        key = 'R';
-        break;
-      case 4:
-        key = 'D'; 
-        break;
-      case 5:
-        key = 'F';
-        break;
+    if(smart){
+      key = smartKeys[Framework.random.nextInt(6)];
+    }else{
+      key = keys[Framework.random.nextInt(26)];
     }
   }
   

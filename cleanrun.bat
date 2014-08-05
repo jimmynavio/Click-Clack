@@ -8,6 +8,7 @@ del click_clack.zip
 
 ECHO *************************** BUILDING CLASS FILES ***************************
 javac -cp "click_clack/." click_clack/*.java -verbose
+pause
 
 ECHO *************************** RUNNING GAME ******************************
 java click_clack.Window
