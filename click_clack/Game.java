@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 
+//This is the main game function
 public class Game {
   final int CROSSFLASH = 25;
 
